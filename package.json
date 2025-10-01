@@ -1,0 +1,14 @@
+{
+  "name": "lol-team-splitter",
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "bottleneck": "^2.19.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "lru-cache": "^10.2.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
