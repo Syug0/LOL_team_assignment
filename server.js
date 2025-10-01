@@ -2,7 +2,8 @@ import express from "express";
 import axios from "axios";
 import dotenv from "dotenv";
 import Bottleneck from "bottleneck";
-import LRU from "lru-cache";
+import { LRUCache } from "lru-cache";
+
 
 dotenv.config();
 const app = express();
@@ -17,12 +18,20 @@ const PORT = process.env.PORT || 3000;
 const limiter = new Bottleneck({ minTime: 70 }); // ~14 req/sec
 
 // ---- キャッシュ（1時間）----
-const cache = new LRU({ max: 1000, ttl: 1000 * 60 * 60 });
+const cache = new LRUCache({ max: 1000, ttl: 1000 * 60 * 60 });
 
 // ---- ユーティリティ ----
 const axiosRiot = axios.create({
-  headers: { "X-Riot-Token": API_KEY }
+  headers: {
+    "X-Riot-Token": process.env.RIOT_API_KEY
+  }
 });
+
+console.log("API KEY:", process.env.RIOT_API_KEY);
+if (!API_KEY || API_KEY.includes("あなたのキー")) {
+  console.error("ERROR: RIOT_API_KEY is not set in .env");
+  process.exit(1);
+}
 
 function normalizeRiotId(input) {
   // "GameName#TagLine" または 単純サモナーネーム（古い形式）を許容
