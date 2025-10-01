@@ -12,7 +12,7 @@ app.use(express.json());
 const API_KEY = process.env.RIOT_API_KEY;
 const PLATFORM = process.env.PLATFORM_ROUTING || "jp1";  // summoner/league v4
 const REGION = process.env.REGIONAL_ROUTING || "asia";   // match v5
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 // ---- Rate limit（Riotのレートに優しく）----
 const limiter = new Bottleneck({ minTime: 70 }); // ~14 req/sec
@@ -26,12 +26,6 @@ const axiosRiot = axios.create({
     "X-Riot-Token": process.env.RIOT_API_KEY
   }
 });
-
-console.log("API KEY:", process.env.RIOT_API_KEY);
-if (!API_KEY || API_KEY.includes("あなたのキー")) {
-  console.error("ERROR: RIOT_API_KEY is not set in .env");
-  process.exit(1);
-}
 
 function normalizeRiotId(input) {
   // "GameName#TagLine" または 単純サモナーネーム（古い形式）を許容
@@ -237,4 +231,14 @@ app.post("/api/team-split", (req, res) => {
   });
 });
 
-app.listen(PORT, () => console.log(`OK: http://localhost:${PORT}`));
+const server = app.listen(PORT, () => console.log(`OK: http://localhost:${PORT}`));
+
+server.on('error', (err) => {
+  if (err && err.code === 'EADDRINUSE') {
+    console.error(`ERROR: Port ${PORT} is already in use. \n` +
+      `Either stop the process using the port or set a different PORT in your environment (e.g. PORT=4000).`);
+    process.exit(1);
+  }
+  console.error('Server error:', err);
+  process.exit(1);
+});
